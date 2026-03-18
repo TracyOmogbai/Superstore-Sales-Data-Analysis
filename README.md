@@ -1,45 +1,46 @@
-Superstore Sales Analysis — SQL Project
+# Superstore Sales Analysis — SQL Portfolio Project
 
-Tools: SQL Server (T-SQL)
-Dataset: Superstore Time Series (Kaggle)
-Author: Tracy Omogbai
+**Tools:** SQL Server (T-SQL) &nbsp;|&nbsp; **Dataset:** Superstore Time Series (Kaggle) &nbsp;|&nbsp; **Author:** Tracy Omogbai
 
-Business Problem
+---
+
+## Business Problem
 
 Retail decisions are often driven by short-term spikes rather than real trends. This leads to poor inventory planning, ineffective discounting, and missed revenue opportunities.
 
-Objective
+---
+
+## Objective
 
 Analyze 4 years of transactional data (2014–2017) to:
 
-Validate data quality
+- Validate data quality
+- Compare day-to-day performance
+- Identify top and bottom performing products
+- Track monthly sales trends
+- Smooth volatility using moving averages
 
-Compare day-to-day performance
+---
 
-Identify top/bottom products
-
-Track monthly sales trends
-
-Smooth volatility using moving averages
-
-Data Preparation
+## Data Preparation
 
 Validated dataset before analysis:
 
-No null values
+- No null values
+- No true duplicates (multi-item orders confirmed)
+- No whitespace inconsistencies
+- Correct data types across all columns
 
-No true duplicates (multi-item orders confirmed)
+**Key note:** Discount is a rate, already applied to Sales:
+`Sales = Price × (1 - Discount)`
 
-No whitespace inconsistencies
+---
 
-Correct data types across all columns
+## Analysis & SQL
 
-Key note:
-Discount is a rate, already applied to Sales:
-Sales = Price × (1 - Discount)
+### 1. Day-to-Day Comparison (LEAD / LAG)
 
-Analysis & SQL
-1. Day-to-Day Comparison (LEAD / LAG)
+```sql
 WITH daily_sales AS
 (
     SELECT
@@ -63,7 +64,13 @@ SELECT
     LAG(TotalSales) OVER (ORDER BY Order_Date) AS Sales_Prev
 FROM daily_sales
 ORDER BY Order_Date
-2. Sales Ranking
+```
+
+---
+
+### 2. Sales Ranking
+
+```sql
 WITH daily_rank AS
 (
     SELECT
@@ -77,7 +84,13 @@ SELECT
     TotalSales,
     RANK() OVER (ORDER BY TotalSales DESC) AS Sales_Rank
 FROM daily_rank
-3. Monthly Sales Trends
+```
+
+---
+
+### 3. Monthly Sales Trends
+
+```sql
 SELECT
     YEAR(Order_Date) AS Year,
     DATENAME(MONTH, Order_Date) AS Month_Name,
@@ -85,7 +98,13 @@ SELECT
 FROM Superstore_Staging
 GROUP BY YEAR(Order_Date), MONTH(Order_Date), DATENAME(MONTH, Order_Date)
 ORDER BY YEAR(Order_Date), MONTH(Order_Date)
-4. Top & Bottom Products Per Month
+```
+
+---
+
+### 4. Top & Bottom Products Per Month
+
+```sql
 WITH monthly_products AS
 (
     SELECT
@@ -112,7 +131,13 @@ SELECT *
 FROM ranked
 WHERE RN_Top = 1 OR RN_Bottom = 1
 ORDER BY Year, Month_Num
-5. 7-Day Moving Average (Trend Smoothing)
+```
+
+---
+
+### 5. 7-Day Moving Average (Trend Smoothing)
+
+```sql
 WITH daily_sales AS
 (
     SELECT
@@ -133,35 +158,35 @@ SELECT
     END AS Moving_Avg_7Day
 FROM daily_sales
 ORDER BY Order_Date
-Key Insights
+```
 
-Sales increased from 2014 → 2016, then declined in 2017
+---
 
-Revenue is highly volatile day-to-day
+## Key Insights
 
-Moving average reveals spike-driven demand, not steady growth
+| Finding | Detail |
+|---|---|
+| Sales trend | Grew from 2014 to 2016, then declined in 2017 |
+| Day-to-day volatility | Revenue fluctuates significantly on a daily basis |
+| Moving average | Reveals spike-driven demand, not steady organic growth |
+| Top revenue driver | Technology (Copiers, Phones) — high unit price, not high volume |
+| Seasonality | Monthly performance varies significantly across all four years |
 
-Technology (Copiers, Phones) drives top revenue (high price, not volume)
+---
 
-Monthly performance varies significantly → seasonality + large orders
+## Recommendation
 
-Recommendation
+Do not rely on daily sales spikes for decision-making. Focus on:
 
-Do not rely on daily sales spikes for decision-making.
-Focus on:
+- **Trend-based forecasting** using moving averages to distinguish real growth from one-off orders
+- **Monitoring high-value product categories** — Technology drives disproportionate revenue and should be prioritized in inventory planning
+- **Investigating the 2017 decline** — whether caused by pricing shifts, changes in discount behavior, or reduced demand in key categories
 
-Trend-based forecasting (moving averages)
+---
 
-Monitoring high-value product categories
+## What This Project Demonstrates
 
-Investigating 2017 decline (pricing, discounts, demand shifts)
-
-What This Project Demonstrates
-
-Strong SQL fundamentals (CTEs, window functions, aggregation)
-
-Data validation and cleaning
-
-Analytical thinking → turning raw data into business insight
-
-Ability to communicate findings clearly and concisely
+- Strong SQL fundamentals — CTEs, window functions, aggregation
+- Data validation and cleaning before analysis
+- Analytical thinking — turning raw data into business insight
+- Ability to communicate findings clearly and concisely
